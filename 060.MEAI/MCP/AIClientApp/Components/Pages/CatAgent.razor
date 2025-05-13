@@ -1,0 +1,59 @@
+﻿@page "/cat"
+@using Microsoft.Extensions.AI
+@using System.ComponentModel
+@using Microsoft.SemanticKernel
+@using Microsoft.SemanticKernel.Agents
+@rendermode InteractiveServer
+@inject McpToolsProvider McpToolsProvider
+@inject ChatCompletionAgent Agent
+@implements IAsyncDisposable
+
+<PageTitle>Semantic Kernel + MCP</PageTitle>
+
+<h2>Semantic Kernel + MCP</h2>
+<div>
+    <label>
+        Input:
+        <input type="text" @bind="_input" />
+    </label>
+    <button @onclick="InvokeAIAsync">Invoke AI</button>
+</div>
+
+<div>
+    <p>@_output</p>
+</div>
+
+@code {
+    #pragma warning disable SKEXP0001
+    private string _input = "";
+    private string _output = "";
+
+    private async Task InvokeAIAsync()
+    {
+        _output = "Invoking...";
+        if (Agent.Kernel.Plugins.Count == 0)
+        {
+            var tools = await McpToolsProvider.GetToolsAsync();
+            Agent.Kernel.Plugins.AddFromFunctions("Plugins",
+                [
+                    .. tools.OfType<AIFunction>().Select(x => x.AsKernelFunction()),
+                    AIFunctionFactory.Create(GetCurrentDate).AsKernelFunction(),
+                    AIFunctionFactory.Create(GetCurrentLocation).AsKernelFunction(),
+                ]);
+        }
+
+        var response = await Agent.InvokeAsync(_input).FirstAsync();
+        _output = response.Message.Content ?? "";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await McpToolsProvider.DisposeAsync();
+    }
+
+    [Description("現在の日付を取得します。")]
+    public static DateTimeOffset GetCurrentDate() => TimeProvider.System.GetLocalNow();
+
+    [Description("現在地を取得します。")]
+    public static string GetCurrentLocation() => "品川";
+}

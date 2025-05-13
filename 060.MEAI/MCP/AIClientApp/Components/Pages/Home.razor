@@ -1,0 +1,56 @@
+﻿@page "/"
+@using Microsoft.Extensions.AI
+@using System.ComponentModel
+@rendermode InteractiveServer
+@inject McpToolsProvider McpToolsProvider
+@inject IChatClient ChatClient
+@implements IAsyncDisposable
+
+<PageTitle>Microsoft.Extensions.AI + MCP</PageTitle>
+
+<h2>Microsoft.Extensions.AI + MCP</h2>
+<div>
+    <label>
+        Input:
+        <input type="text" @bind="_input" />
+    </label>
+    <button @onclick="InvokeAIAsync">Invoke AI</button>
+</div>
+
+<div>
+    <p>@_output</p>
+</div>
+
+@code {
+    private string _input = "";
+    private string _output = "";
+
+    private async Task InvokeAIAsync()
+    {
+        _output = "Invoking...";
+        var tools = await McpToolsProvider.GetToolsAsync();
+        var response = await ChatClient.GetResponseAsync(_input, options: new()
+        {
+            ToolMode = ChatToolMode.Auto,
+            Tools = 
+            [
+                .. tools, 
+                AIFunctionFactory.Create(GetCurrentDate),
+                AIFunctionFactory.Create(GetCurrentLocation)
+            ],
+        });
+
+        _output = response.Text;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await McpToolsProvider.DisposeAsync();
+    }
+
+    [Description("現在の日付を取得します。")]
+    public static DateTimeOffset GetCurrentDate() => TimeProvider.System.GetLocalNow();
+
+    [Description("現在地を取得します。")]
+    public static string GetCurrentLocation() => "品川";
+}
