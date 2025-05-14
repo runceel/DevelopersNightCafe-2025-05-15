@@ -15,11 +15,9 @@ IChatClient chatClient = aoaiChatClient
     .UseFunctionInvocation()
     .Build();
 
-var data = await File.ReadAllBytesAsync("test.png");
-
-var chatResponse = await chatClient.GetResponseAsync(new ChatMessage(ChatRole.User,
-    [
-        new TextContent("この画像ってなに？"),
-        new DataContent(data, "image/png"),
-    ]));
+var chatResponse = await chatClient.GetResponseAsync("""
+    こんにちは！！日本MS公式YouTubeチャンネルのくらでべで配信してるよ！！
+    くらでべって知ってる？
+    """);
+    
 Console.WriteLine(chatResponse.Text);
