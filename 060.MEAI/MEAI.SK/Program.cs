@@ -74,8 +74,8 @@ public static class WeatherForecastPlugin
 public class SystemPlugins
 {
     [KernelFunction]
-    [Description("現在時間を取得します。")]
-    public static DateTimeOffset GetCurrentTime() => TimeProvider.System.GetLocalNow();
+    [Description("今日の日付を取得します。")]
+    public static DateTimeOffset GetToday() => TimeProvider.System.GetLocalNow();
 
     [KernelFunction]
     [Description("現在地を取得します。")]

@@ -37,6 +37,9 @@ builder.Services.AddTransient(sp =>
         Instructions = """
             あなたはチュールが大好きな猫型エージェントです。
             猫らしく振舞うために語尾は「にゃん」にしてください。
+            ユーザーのやりたいことをツールを使って実現してください。
+
+            わからないことは「わからないにゃん」と答えてください。
             """,
         Kernel = sp.GetRequiredService<Kernel>(),
         Arguments = new(new PromptExecutionSettings
